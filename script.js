@@ -10,6 +10,7 @@ window.onload = function()
     //JAI RAJOUTE CI DESSOUS
     let widthInBlocks = canvasWidth/blockSize; //la largeur en terme de bloc
     let heightInBlocks = canvasHeight/blockSize; //la hauteur en terme de bloc
+    let score;
     //JUSQUICI
     init();
     
@@ -21,29 +22,65 @@ window.onload = function()
         canvas.style.border = "1px solid";
         document.body.appendChild(canvas);
         ctx = canvas.getContext('2d');
-        snakee = new Snake([[6,4], [5,4], [4,4]], "right");
+        snakee = new Snake([[6,4], [5,4], [4,4],[3,4],[2,4]], "right");
         applee = new Apple([10,10]);
+        score = 0;
         refreshCanvas();
     }
 
     function refreshCanvas()
     {
-        // JAI MODIFIE DU CODE ICI AUSSI 
         snakee.advance();
         if(snakee.checkCollision())
         {
-            //GAME OVER
+            gameOver();
         }
         else
         {
-        ctx.clearRect(0,0,canvasWidth, canvasHeight);
-        snakee.draw();
-        applee.draw();
-        setTimeout(refreshCanvas,delay);
+            //Si le serpent mange la pomme
+            if(snakee.isEatingApple(applee))
+            {
+                //Augmenter la taille du serpent
+                snakee.ateApple = true;
+                //Donner une nouvelle position à la pomme et vérifier qu'elle n'est pas sur le serpent
+                do{
+                    applee.setNewPosition();
+                } while(applee.isOnSnake(snakee));
+                score++;
+
+            }
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            snakee.draw();
+            applee.draw();
+            drawScore();
+            setTimeout(refreshCanvas, delay);
         }
-        //JUSQU'ICI
         
     }
+
+    //Fonction qui permet d'afficher le message de fin de jeu
+    function gameOver()
+    {
+        ctx.save();
+        ctx.fillText("Game Over", 5, 15);
+        ctx.fillText("Appuyer sur la touche Espace pour rejouer", 5, 30);
+        ctx.restore();
+    }
+
+    //Fonction qui permet de relancer le jeu
+    function restart(){
+        snakee = new Snake([[6,4], [5,4], [4,4],[3,4],[2,4]], "right");
+        applee = new Apple([10,10]);
+        score = 0;
+        refreshCanvas();
+    }
+
+    function drawScore(){
+        ctx.save();
+        ctx.fillText("score : " + score.toString(), 5, canvasHeight - 5);
+        ctx.restore();
+    }
+
     function drawBlock(ctx, position)
     {
         let x = position[0] * blockSize;
@@ -55,6 +92,8 @@ window.onload = function()
     {
         this.body = body;
         this.direction= direction;
+        //Le serpent mange une pomme ou pas
+        this.ateApple = false;
         this.draw = function()
         {
             ctx.save();
@@ -65,7 +104,7 @@ window.onload = function()
             }
             ctx.restore();
         };
-        this.advance= function()
+        this.advance= () =>
         {
             let nextPosition = this.body[0].slice();
             switch(this.direction)
@@ -87,7 +126,11 @@ window.onload = function()
                     
             }
             this.body.unshift(nextPosition);
-            this.body.pop();
+            //On n'augmente pas la taille du serpent si il n'a pas mangé de pomme
+            if(!this.ateApple)
+                this.body.pop();
+            else
+                this.ateApple = false;
         };
         this.setDirection = function(newDirection)
         {
@@ -109,8 +152,8 @@ window.onload = function()
             {
                 this.direction = newDirection;
             }
+
         };
-// CEST ICI QUE JAI CHANGE DU CODE
         this.checkCollision = () =>
         {
             let wallCollision = false;
@@ -135,8 +178,17 @@ window.onload = function()
                     snakeCollision = true;
             }
             return wallCollision || snakeCollision;
-// JUSQUE LA
-        }
+        };
+        //Fonction qui permet de détécter quand le serpent mange la pomme
+        this.isEatingApple = (appleToEat) =>
+        {
+            let head = this.body[0];
+            if(head[0] === appleToEat.position[0] && head[1] === appleToEat.position[1])
+                return true;
+            else
+                return false;
+        };
+
 
     }
 
@@ -149,12 +201,31 @@ window.onload = function()
             ctx.fillStyle = "#34C924";
             ctx.beginPath(); // JE NE CONNAIS PAS CA
             let radius = blockSize /2;// Pour dessiner le rayon du cercle qui representera la pomme
-            let x = position[0]*blockSize + radius;
-            let y = position[1]*blockSize + radius;
+            let x = this.position[0]*blockSize + radius;
+            let y = this.position[1]*blockSize + radius;
             ctx.arc(x,y, radius, 0, Math.PI*2, true); //Fonction pour dessiner un cercle
             ctx.fill();
             ctx.restore();
-        }
+        };
+        //Fonction qui permet de donner une nouvelle position à la pomme
+        this.setNewPosition = function()
+        {
+            let newX = Math.round(Math.random() * (widthInBlocks - 1));
+            let newY = Math.round(Math.random() * (heightInBlocks - 1));
+            this.position = [newX, newY];
+        };
+        //Fonction qui permet de vérifier si la pomme n'est pas sur le serpent au moment de sa création
+        this.isOnSnake = (snakeToCheck) =>
+        {
+            let isOnSnake = false;
+            for(let i = 0; i< snakeToCheck.body.length ;i++)
+            {
+                if(this.position[0] === snakeToCheck.body[i][0] && this.position[1] === snakeToCheck.body[i][1]){
+                    isOnSnake = true;
+                }
+            }
+            return isOnSnake;
+        };
     }
 
     document.onkeydown =  handleKeydown = e => // ecrit function handleKeydown(e), j'ai essayé de le faire en mode arrow
@@ -175,6 +246,9 @@ window.onload = function()
             case 40:
                 newDirection = "down";
                 break;
+            case 32:
+                restart();
+                return;
             default:
                 return;//en gros ne continue pas la fonction 
         }
