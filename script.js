@@ -10,6 +10,7 @@ window.onload = function()
     //JAI RAJOUTE CI DESSOUS
     let widthInBlocks = canvasWidth/blockSize; //la largeur en terme de bloc
     let heightInBlocks = canvasHeight/blockSize; //la hauteur en terme de bloc
+    let score;
     //JUSQUICI
     init();
     
@@ -23,6 +24,7 @@ window.onload = function()
         ctx = canvas.getContext('2d');
         snakee = new Snake([[6,4], [5,4], [4,4],[3,4],[2,4]], "right");
         applee = new Apple([10,10]);
+        score = 0;
         refreshCanvas();
     }
 
@@ -31,7 +33,7 @@ window.onload = function()
         snakee.advance();
         if(snakee.checkCollision())
         {
-            //GAME OVER
+            gameOver();
         }
         else
         {
@@ -44,15 +46,41 @@ window.onload = function()
                 do{
                     applee.setNewPosition();
                 } while(applee.isOnSnake(snakee));
+                score++;
 
             }
             ctx.clearRect(0, 0, canvasWidth, canvasHeight);
             snakee.draw();
             applee.draw();
+            drawScore();
             setTimeout(refreshCanvas, delay);
         }
         
     }
+
+    //Fonction qui permet d'afficher le message de fin de jeu
+    function gameOver()
+    {
+        ctx.save();
+        ctx.fillText("Game Over", 5, 15);
+        ctx.fillText("Appuyer sur la touche Espace pour rejouer", 5, 30);
+        ctx.restore();
+    }
+
+    //Fonction qui permet de relancer le jeu
+    function restart(){
+        snakee = new Snake([[6,4], [5,4], [4,4],[3,4],[2,4]], "right");
+        applee = new Apple([10,10]);
+        score = 0;
+        refreshCanvas();
+    }
+
+    function drawScore(){
+        ctx.save();
+        ctx.fillText("score : " + score.toString(), 5, canvasHeight - 5);
+        ctx.restore();
+    }
+
     function drawBlock(ctx, position)
     {
         let x = position[0] * blockSize;
@@ -218,6 +246,9 @@ window.onload = function()
             case 40:
                 newDirection = "down";
                 break;
+            case 32:
+                restart();
+                return;
             default:
                 return;//en gros ne continue pas la fonction 
         }
