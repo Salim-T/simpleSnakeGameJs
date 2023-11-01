@@ -1,7 +1,7 @@
 window.onload = function()
 {
     let canvasWidth = 900;
-    let canvasHeight = 600;
+    let canvasHeight = 580;
     let blockSize = 30;
     let ctx;
     let delay = 100;
@@ -21,7 +21,7 @@ window.onload = function()
         canvas.style.border = "1px solid";
         document.body.appendChild(canvas);
         ctx = canvas.getContext('2d');
-        snakee = new Snake([[6,4], [5,4], [4,4]], "right");
+        snakee = new Snake([[6,4], [5,4], [4,4],[3,4],[2,4]], "right");
         applee = new Apple([10,10]);
         refreshCanvas();
     }
