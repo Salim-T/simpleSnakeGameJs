@@ -38,14 +38,13 @@ window.onload = function()
             //Si le serpent mange la pomme
             if(snakee.isEatingApple(applee))
             {
-                //Donner une nouvelle position à la pomme si elle apparait sur le serpent
+                //Augmenter la taille du serpent
+                snakee.ateApple = true;
+                //Donner une nouvelle position à la pomme et vérifier qu'elle n'est pas sur le serpent
                 do{
                     applee.setNewPosition();
-                }
-                while(applee.isOnSnake(snakee))
+                } while(applee.isOnSnake(snakee));
 
-                //Donner une nouvelle position à la pomme
-                applee.setNewPosition();
             }
             ctx.clearRect(0, 0, canvasWidth, canvasHeight);
             snakee.draw();
@@ -65,6 +64,8 @@ window.onload = function()
     {
         this.body = body;
         this.direction= direction;
+        //Le serpent mange une pomme ou pas
+        this.ateApple = false;
         this.draw = function()
         {
             ctx.save();
@@ -75,7 +76,7 @@ window.onload = function()
             }
             ctx.restore();
         };
-        this.advance= function()
+        this.advance= () =>
         {
             let nextPosition = this.body[0].slice();
             switch(this.direction)
@@ -97,7 +98,11 @@ window.onload = function()
                     
             }
             this.body.unshift(nextPosition);
-            this.body.pop();
+            //On n'augmente pas la taille du serpent si il n'a pas mangé de pomme
+            if(!this.ateApple)
+                this.body.pop();
+            else
+                this.ateApple = false;
         };
         this.setDirection = function(newDirection)
         {
@@ -119,6 +124,7 @@ window.onload = function()
             {
                 this.direction = newDirection;
             }
+
         };
         this.checkCollision = () =>
         {
@@ -184,9 +190,11 @@ window.onload = function()
         this.isOnSnake = (snakeToCheck) =>
         {
             let isOnSnake = false;
-            for(let i = 0; i< snakeToCheck.body.length ;i++){
-                if(this.position[0] === snakeToCheck.body[i][0] && this.position[1] === snakeToCheck.body[i][1])
+            for(let i = 0; i< snakeToCheck.body.length ;i++)
+            {
+                if(this.position[0] === snakeToCheck.body[i][0] && this.position[1] === snakeToCheck.body[i][1]){
                     isOnSnake = true;
+                }
             }
             return isOnSnake;
         };
