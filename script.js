@@ -1,7 +1,7 @@
 window.onload = function()
 {
     let canvasWidth = 900;
-    let canvasHeight = 580;
+    let canvasHeight = 600;
     let blockSize = 30;
     let ctx;
     let delay = 100;
@@ -28,7 +28,6 @@ window.onload = function()
 
     function refreshCanvas()
     {
-        // JAI MODIFIE DU CODE ICI AUSSI 
         snakee.advance();
         if(snakee.checkCollision())
         {
@@ -36,12 +35,23 @@ window.onload = function()
         }
         else
         {
-        ctx.clearRect(0,0,canvasWidth, canvasHeight);
-        snakee.draw();
-        applee.draw();
-        setTimeout(refreshCanvas,delay);
+            //Si le serpent mange la pomme
+            if(snakee.isEatingApple(applee))
+            {
+                //Donner une nouvelle position à la pomme si elle apparait sur le serpent
+                do{
+                    applee.setNewPosition();
+                }
+                while(applee.isOnSnake(snakee))
+
+                //Donner une nouvelle position à la pomme
+                applee.setNewPosition();
+            }
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            snakee.draw();
+            applee.draw();
+            setTimeout(refreshCanvas, delay);
         }
-        //JUSQU'ICI
         
     }
     function drawBlock(ctx, position)
@@ -110,7 +120,6 @@ window.onload = function()
                 this.direction = newDirection;
             }
         };
-// CEST ICI QUE JAI CHANGE DU CODE
         this.checkCollision = () =>
         {
             let wallCollision = false;
@@ -135,8 +144,17 @@ window.onload = function()
                     snakeCollision = true;
             }
             return wallCollision || snakeCollision;
-// JUSQUE LA
-        }
+        };
+        //Fonction qui permet de détécter quand le serpent mange la pomme
+        this.isEatingApple = (appleToEat) =>
+        {
+            let head = this.body[0];
+            if(head[0] === appleToEat.position[0] && head[1] === appleToEat.position[1])
+                return true;
+            else
+                return false;
+        };
+
 
     }
 
@@ -149,12 +167,29 @@ window.onload = function()
             ctx.fillStyle = "#34C924";
             ctx.beginPath(); // JE NE CONNAIS PAS CA
             let radius = blockSize /2;// Pour dessiner le rayon du cercle qui representera la pomme
-            let x = position[0]*blockSize + radius;
-            let y = position[1]*blockSize + radius;
+            let x = this.position[0]*blockSize + radius;
+            let y = this.position[1]*blockSize + radius;
             ctx.arc(x,y, radius, 0, Math.PI*2, true); //Fonction pour dessiner un cercle
             ctx.fill();
             ctx.restore();
-        }
+        };
+        //Fonction qui permet de donner une nouvelle position à la pomme
+        this.setNewPosition = function()
+        {
+            let newX = Math.round(Math.random() * (widthInBlocks - 1));
+            let newY = Math.round(Math.random() * (heightInBlocks - 1));
+            this.position = [newX, newY];
+        };
+        //Fonction qui permet de vérifier si la pomme n'est pas sur le serpent au moment de sa création
+        this.isOnSnake = (snakeToCheck) =>
+        {
+            let isOnSnake = false;
+            for(let i = 0; i< snakeToCheck.body.length ;i++){
+                if(this.position[0] === snakeToCheck.body[i][0] && this.position[1] === snakeToCheck.body[i][1])
+                    isOnSnake = true;
+            }
+            return isOnSnake;
+        };
     }
 
     document.onkeydown =  handleKeydown = e => // ecrit function handleKeydown(e), j'ai essayé de le faire en mode arrow
