@@ -1,7 +1,7 @@
 window.onload = function()
 {
     let canvasWidth = 900;
-    let canvasHeight = 600;
+    let canvasHeight = 500;
     let blockSize = 30;
     let ctx;
     let delay = 100;
@@ -19,7 +19,11 @@ window.onload = function()
         let canvas = document.createElement('canvas');
         canvas.width = canvasWidth;
         canvas.height = canvasHeight;
-        canvas.style.border = "1px solid";
+        canvas.style.border = "30px solid gray";
+        canvas.style.margin = "0px auto";
+        canvas.style.display = "block";
+        canvas.style.backgroundColor = "#ddd";
+
         document.body.appendChild(canvas);
         ctx = canvas.getContext('2d');
         snakee = new Snake([[6,4], [5,4], [4,4],[3,4],[2,4]], "right");
@@ -62,8 +66,10 @@ window.onload = function()
     function gameOver()
     {
         ctx.save();
-        ctx.fillText("Game Over", 5, 15);
-        ctx.fillText("Appuyer sur la touche Espace pour rejouer", 5, 30);
+        ctx.font = "bold 20px sans-serif";
+        ctx.fillStyle = "black";
+        ctx.fillText("Game Over", 5, 20);
+        ctx.fillText("Appuyer sur la touche Espace pour rejouer", 5, 45);
         ctx.restore();
     }
 
@@ -77,6 +83,8 @@ window.onload = function()
 
     function drawScore(){
         ctx.save();
+        ctx.font = "bold 20px sans-serif";
+        ctx.fillStyle = "gray";
         ctx.fillText("score : " + score.toString(), 5, canvasHeight - 5);
         ctx.restore();
     }
